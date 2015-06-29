@@ -181,6 +181,8 @@ var fps = 0;
 var fpsCount = 0;
 var fpsTime = 0;
 
+
+
 function run()
 {
 	context.fillStyle = "#ccc";		
