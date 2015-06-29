@@ -77,6 +77,22 @@ Enemy.prototype.update = function(deltaTime){
 		
 		moveLeft = false;
 		moveRight = false;
+		/*if(this.collidedLeft || this.collidedRight){
+			enemyJump = true;
+		}*/
+		
+		//console.log(enemy.position.y);
+		
+		if(this.isJumping){
+			this.isJumping = false;
+			enemyJump = false;
+		}
+		if(this.collidedLeft){
+			this.collidedLeft = false;
+		}
+		if(this.collidedRight){
+			this.collidedRight = false;
+		}
 		
 		if(!this.climbing){
 			acceleration.y = EnemyGravity;	
@@ -113,7 +129,8 @@ Enemy.prototype.update = function(deltaTime){
 				if(this.sprite.currentAnimation != ANIM_SHOOT_RIGHT){
 					this.sprite.setAnimation(ANIM_SHOOT_RIGHT);
 				}	
-			}}else{
+			}
+		}else{
 			if(this.jumping == false && this.falling == false){
 				if(this.direction == LEFT){
 					if(this.sprite.currentAnimation != ANIM_IDLE_LEFT)
