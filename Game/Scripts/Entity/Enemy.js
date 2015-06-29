@@ -14,8 +14,8 @@ var ANIM_SHOOT_LEFT = 7;
 var ANIM_SHOOT_RIGHT = 8;
 var ANIM_MAX = 9;
 
-var Player = function() {
-	this.sprite = new Sprite("Art/ChuckNorris.png");
+var Enemy = function() {
+	this.sprite = new Sprite("Art/ChuckNorris2.png");
 	this.sprite.buildAnimation(12, 8, 165, 126, 0.10, [0, 1, 2, 3, 4, 5, 6, 7]);//idle left
 	this.sprite.buildAnimation(12, 8, 165, 126, 0.05, [8, 9, 10, 11, 12]);// LEFT_JUMP
 	this.sprite.buildAnimation(12, 8, 165, 126, 0.05, [13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26]);//LEFT_WALK
@@ -27,10 +27,7 @@ var Player = function() {
 	this.sprite.buildAnimation(12, 8, 165, 126, 0.05, [79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92]);//shoot right
 
 	this.position = new Vector2();
-	this.position.set(10, canvas.height - 200);
-	
-	this.startPos = new Vector2();
-	this.startPos.set(10, canvas.height - 200)
+	this.position.set(canvas.width - 55, canvas.height - 200);
 	
 	this.width = 119;
 	this.height = 103;
@@ -38,7 +35,7 @@ var Player = function() {
 	this.isDead = false;
 	
 	for(var i=0; i<ANIM_MAX; i++){
-		if(!this.isDead){
+	if(!this.isDead){
 			this.sprite.setAnimationOffset(i, -this.width/2, -this.height + 14);
 		}
 	}
@@ -47,31 +44,32 @@ var Player = function() {
 	this.falling = false;
 	this.shooting = false;
 	this.climbing = false;
-	this.bulletTimer = 0;
-	this.bullets = [];
+	
+	this.bulletTimer1 = 0;
+	this.bullets1 = [];
 	
 	this.velocity = new Vector2();
 	
 	this.rotation = 0;
 	
-	this.direction = RIGHT;
+	this.direction = LEFT;
 	
 	this.lives = 3;
 };
 
-Player.prototype.update = function(deltaTime){
+Enemy.prototype.update = function(deltaTime){
 	if(!this.isDead){
 		this.sprite.update(deltaTime);
-		this.bulletTimer -= deltaTime;
+		this.bulletTimer1 -= deltaTime;
 		
 		var acceleration = new Vector2();
-		var playerAccel = 3000;
-		var playerDrag = 7;
-		var playerGravity = TILE * 9.8 * 6;
+		var EnemyAccel = 3000;
+		var EnemyDrag = 7;
+		var EnemyGravity = TILE * 9.8 * 6;
 		var jumpForce = 50000;
 		
 		if(!this.climbing){
-			acceleration.y = playerGravity;
+			acceleration.y = EnemyGravity;	
 		}
 		
 		var currFrame = this.sprite.currentFrame;
@@ -80,34 +78,32 @@ Player.prototype.update = function(deltaTime){
 			this.isDead = true;
 		}
 		
-		if(keyboard.isKeyDown(keyboard.KEY_A) == true ){
-			acceleration.x -= playerAccel;
+		if(keyboard.isKeyDown(keyboard.KEY_LEFT) == true ){
+			acceleration.x -= EnemyAccel;
 			left = true;
 			this.direction = LEFT;
 			if(this.sprite.currentAnimation != ANIM_WALK_LEFT && this.jumping == false && this.falling == false)
 				this.sprite.setAnimation(ANIM_WALK_LEFT);
-		}else if(keyboard.isKeyDown(keyboard.KEY_D) == true ){
-			acceleration.x += playerAccel;
+		}else if(keyboard.isKeyDown(keyboard.KEY_RIGHT) == true ){
+			acceleration.x += EnemyAccel;
 			right = true;
 			this.direction = RIGHT;
 			if(this.sprite.currentAnimation != ANIM_WALK_RIGHT && this.jumping == false && this.falling == false)
 				this.sprite.setAnimation(ANIM_WALK_RIGHT);
-		}else if(keyboard.isKeyDown(keyboard.KEY_SPACE) == true ){
-			if ( this.bulletTimer < 0 ){
-				this.bullets.push(new Bullet(this.position.x, this.position.y, this.direction));
-				this.bulletTimer = 0.25;
+		}else if(keyboard.isKeyDown(190) == true ){
+			if ( this.bulletTimer1 < 0 ){
+				this.bullets1.push(new Bullet(this.position.x, this.position.y, this.direction));
+				this.bulletTimer1 = 0.25;
 			}
 			if(this.direction == LEFT){  
 				if(this.sprite.currentAnimation != ANIM_SHOOT_LEFT){
 					this.sprite.setAnimation(ANIM_SHOOT_LEFT);
 				}	
-			} else{
+			}else{
 				if(this.sprite.currentAnimation != ANIM_SHOOT_RIGHT){
 					this.sprite.setAnimation(ANIM_SHOOT_RIGHT);
 				}	
-			}
-		}else{
-			player.shooting = false;
+			}}else{
 			if(this.jumping == false && this.falling == false){
 				if(this.direction == LEFT){
 					if(this.sprite.currentAnimation != ANIM_IDLE_LEFT)
@@ -118,8 +114,6 @@ Player.prototype.update = function(deltaTime){
 				}
 			}
 		}
-		
-		
 		
 		if(this.jumping || this.falling ){
 			if(this.direction == LEFT){
@@ -137,7 +131,7 @@ Player.prototype.update = function(deltaTime){
 			this.falling = false;
 		}
 		
-		if ( keyboard.isKeyDown(keyboard.KEY_W) && !this.jumping && !this.falling ){
+		if ( keyboard.isKeyDown(keyboard.KEY_UP) && !this.jumping && !this.falling ){
 			acceleration.y -= jumpForce;
 			this.jumping = true;
 			if(this.direction == LEFT){
@@ -147,12 +141,12 @@ Player.prototype.update = function(deltaTime){
 			}
 		}
 		
-		var dragVector = this.velocity.multiplyScalar(playerDrag);
+		var dragVector = this.velocity.multiplyScalar(EnemyDrag);
 		dragVector.y = 0;
 		acceleration = acceleration.subtract(dragVector);
 		
 		this.velocity = this.velocity.add(acceleration.multiplyScalar(deltaTime));
-		this.position = this.position.add(this.velocity.multiplyScalar(deltaTime));	
+		this.position = this.position.add(this.velocity.multiplyScalar(deltaTime));
 		
 		var tx = pixelToTile(this.position.x);
 		var ty = pixelToTile(this.position.y);
@@ -170,9 +164,9 @@ Player.prototype.update = function(deltaTime){
 				this.sprite.setAnimation(ANIM_CLIMB);
 				this.sprite.currentFrame = currFrame;
 			}		
-			if(keyboard.isKeyDown(keyboard.KEY_W)){
+			if(keyboard.isKeyDown(keyboard.KEY_UP)){
 				this.velocity.y = -500;
-			}else if(keyboard.isKeyDown(keyboard.KEY_S)){
+			}else if(keyboard.isKeyDown(keyboard.KEY_DOWN)){
 				this.velocity.y = 300;
 			}else{
 				this.velocity.y = 0;
@@ -196,7 +190,6 @@ Player.prototype.update = function(deltaTime){
 				}else{
 					this.position.y = tileToPixel(ty + 1);
 					this.velocity.y = 0;
-					this.lives -= 1;
 					
 					cell = cellDown;
 					cellRight = cellDiag;
@@ -219,34 +212,23 @@ Player.prototype.update = function(deltaTime){
 			}
 		}
 	}
-	
-	//loop over all the bullets
-	//call update on them
-	//if they need to die, remove them from the array
-	for ( var b = 0 ; b < this.bullets.length ; ++b)
+	for ( var b = 0 ; b < this.bullets1.length ; ++b)
 	{
-		this.bullets[b].update(deltaTime);
+		this.bullets1[b].update(deltaTime);
 		
-		if ( this.bullets[b].isDead )
+		if ( this.bullets1[b].isDead )
 		{
-			this.bullets[b] = this.bullets[this.bullets.length-1];
-			this.bullets.length -= 1;
+			this.bullets1[b] = this.bullets1[this.bullets1.length-1];
+			this.bullets1.length -= 1;
 		}
 	}
-	
-	
-	
 }
 
-Player.prototype.draw = function(){
+Enemy.prototype.draw = function(){
 	if(!this.isDead){
-		this.sprite.draw(context, this.position.x, this.position.y + 10);
-		
-		//loop over all the bullets
-		//call draw on them
-		for (var b = 0; b < this.bullets.length; b++){
-			this.bullets[b].draw();
+		this.sprite.draw(context, this.position.x, this.position.y);
+		for (var b = 0; b < this.bullets1.length; b++){
+			this.bullets1[b].draw();
 		}
-		
 	}
 }
