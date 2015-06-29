@@ -14,6 +14,10 @@ var ANIM_SHOOT_LEFT = 7;
 var ANIM_SHOOT_RIGHT = 8;
 var ANIM_MAX = 9;
 
+var moveLeft = false;
+var moveRight = false;
+var enemyJump = false;
+
 var Enemy = function() {
 	this.sprite = new Sprite("Art/ChuckNorris2.png");
 	this.sprite.buildAnimation(12, 8, 165, 126, 0.10, [0, 1, 2, 3, 4, 5, 6, 7]);//idle left
@@ -55,18 +59,24 @@ var Enemy = function() {
 	this.direction = LEFT;
 	
 	this.lives = 3;
+	
+	this.collidedLeft = false;
+	this.collidedRight = false;
 };
 
 Enemy.prototype.update = function(deltaTime){
 	if(!this.isDead){
 		this.sprite.update(deltaTime);
 		this.bulletTimer1 -= deltaTime;
-		
+
 		var acceleration = new Vector2();
 		var EnemyAccel = 3000;
 		var EnemyDrag = 7;
 		var EnemyGravity = TILE * 9.8 * 6;
 		var jumpForce = 50000;
+		
+		moveLeft = false;
+		moveRight = false;
 		
 		if(!this.climbing){
 			acceleration.y = EnemyGravity;	
@@ -78,13 +88,13 @@ Enemy.prototype.update = function(deltaTime){
 			this.isDead = true;
 		}
 		
-		if(keyboard.isKeyDown(keyboard.KEY_LEFT) == true ){
+		if(keyboard.isKeyDown(keyboard.KEY_LEFT) == true  || moveLeft){
 			acceleration.x -= EnemyAccel;
 			left = true;
 			this.direction = LEFT;
 			if(this.sprite.currentAnimation != ANIM_WALK_LEFT && this.jumping == false && this.falling == false)
 				this.sprite.setAnimation(ANIM_WALK_LEFT);
-		}else if(keyboard.isKeyDown(keyboard.KEY_RIGHT) == true ){
+		}else if(keyboard.isKeyDown(keyboard.KEY_RIGHT) == true || moveRight){
 			acceleration.x += EnemyAccel;
 			right = true;
 			this.direction = RIGHT;
@@ -131,7 +141,7 @@ Enemy.prototype.update = function(deltaTime){
 			this.falling = false;
 		}
 		
-		if ( keyboard.isKeyDown(keyboard.KEY_UP) && !this.jumping && !this.falling ){
+		if ( keyboard.isKeyDown(keyboard.KEY_UP) && !this.jumping && !this.falling || enemyJump){
 			acceleration.y -= jumpForce;
 			this.jumping = true;
 			if(this.direction == LEFT){
@@ -204,11 +214,15 @@ Enemy.prototype.update = function(deltaTime){
 			if((cellRight && !cell) || (cellDiag && !cellDown && ny)){
 				this.position.x = tileToPixel(tx)/* - this.width/2*/;
 				this.velocity.x = 0;
+				this.collidedRight = true;
+				this.collidedLeft = false;
 			}
 		}else if(this.velocity.x < 0){//left
 			if((cell && !cellRight) || (cellDown && !cellDiag && ny)){
 				this.position.x = tileToPixel(tx + 1)/* + this.width/2*/;
 				this.velocity.x = 0;
+				this.collidedLeft = true;
+				this.collidedRight = false;
 			}
 		}
 	}
